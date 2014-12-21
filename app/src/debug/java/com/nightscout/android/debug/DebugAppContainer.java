@@ -5,11 +5,20 @@ import android.app.Application;
 import android.content.Context;
 import android.support.v4.widget.DrawerLayout;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 
 import com.nightscout.android.R;
+import com.nightscout.android.dexcom.SyncingService;
 import com.nightscout.android.ui.AppContainer;
+import com.nightscout.core.dexcom.NoiseMode;
+import com.nightscout.core.dexcom.TrendArrow;
+import com.nightscout.core.dexcom.records.EGVRecord;
+
+import java.util.Date;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -18,6 +27,7 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 
 import static butterknife.ButterKnife.findById;
+import static org.joda.time.Duration.standardMinutes;
 
 /**
  * An {@link AppContainer} for debug builds which wrap the content view with a sliding drawer on
@@ -38,10 +48,12 @@ public class DebugAppContainer implements AppContainer {
 
   @InjectView(R.id.debug_drawer_layout) DrawerLayout drawerLayout;
   @InjectView(R.id.debug_content) LinearLayout content;
+  @InjectView(R.id.debug_egv_input) EditText egvInput;
+  @InjectView(R.id.debug_generate_egv_button) Button generateEgvButton;
 
 
   @Override
-  public ViewGroup get(Activity activity) {
+  public ViewGroup get(final Activity activity) {
     this.activity = activity;
     drawerContext = activity;
 
@@ -54,6 +66,15 @@ public class DebugAppContainer implements AppContainer {
     // Inject after inflating the drawer layout so its views are available to inject.
     ButterKnife.inject(this, activity);
 
+    generateEgvButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        int input = Integer.parseInt(egvInput.getText().toString());
+        EGVRecord record = new EGVRecord(input, TrendArrow.NONE, new Date(), new Date(), NoiseMode.None);
+        activity.sendBroadcast(SyncingService.generateSGVIntent(
+            record, false, standardMinutes(5).getMillis(), new Date().getTime(), null, 0));
+      }
+    });
 
     return content;
   }

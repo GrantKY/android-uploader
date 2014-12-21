@@ -277,23 +277,29 @@ public class SyncingService extends IntentService {
         return g4Connected;
     }
 
+    public static Intent generateSGVIntent(EGVRecord egvRecord, boolean uploadStatus, long nextUploadTime, long displayTime, JSONArray json, int batLvl) {
+      Intent broadcastIntent = new Intent();
+      broadcastIntent.setAction(MainActivity.CGMStatusReceiver.PROCESS_RESPONSE);
+      broadcastIntent.addCategory(Intent.CATEGORY_DEFAULT);
+      broadcastIntent.putExtra(RESPONSE_SGV, egvRecord.getBGValue());
+      broadcastIntent.putExtra(RESPONSE_TREND, egvRecord.getTrend().getID());
+      broadcastIntent.putExtra(RESPONSE_TIMESTAMP, egvRecord.getDisplayTime().getTime());
+      broadcastIntent.putExtra(RESPONSE_NEXT_UPLOAD_TIME, nextUploadTime);
+      broadcastIntent.putExtra(RESPONSE_UPLOAD_STATUS, uploadStatus);
+      broadcastIntent.putExtra(RESPONSE_DISPLAY_TIME, displayTime);
+      if (json != null)
+        broadcastIntent.putExtra(RESPONSE_JSON, json.toString());
+      broadcastIntent.putExtra(RESPONSE_BAT, batLvl);
+      return broadcastIntent;
+    }
+
     private void broadcastSGVToUI(EGVRecord egvRecord, boolean uploadStatus,
                                   long nextUploadTime, long displayTime,
                                   JSONArray json, int batLvl) {
         Log.d(TAG, "Current EGV: " + egvRecord.getBGValue());
-        Intent broadcastIntent = new Intent();
-        broadcastIntent.setAction(MainActivity.CGMStatusReceiver.PROCESS_RESPONSE);
-        broadcastIntent.addCategory(Intent.CATEGORY_DEFAULT);
-        broadcastIntent.putExtra(RESPONSE_SGV, egvRecord.getBGValue());
-        broadcastIntent.putExtra(RESPONSE_TREND, egvRecord.getTrend().getID());
-        broadcastIntent.putExtra(RESPONSE_TIMESTAMP, egvRecord.getDisplayTime().getTime());
-        broadcastIntent.putExtra(RESPONSE_NEXT_UPLOAD_TIME, nextUploadTime);
-        broadcastIntent.putExtra(RESPONSE_UPLOAD_STATUS, uploadStatus);
-        broadcastIntent.putExtra(RESPONSE_DISPLAY_TIME, displayTime);
-        if (json != null)
-            broadcastIntent.putExtra(RESPONSE_JSON, json.toString());
-        broadcastIntent.putExtra(RESPONSE_BAT, batLvl);
-        sendBroadcast(broadcastIntent);
+
+        sendBroadcast(generateSGVIntent(
+            egvRecord, uploadStatus, nextUploadTime, displayTime, json, batLvl));
     }
 
     private void broadcastSGVToUI() {
