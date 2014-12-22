@@ -33,7 +33,6 @@ public class SettingsActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setupActionBar();
 
-        // Display the fragment as the main content.
         getFragmentManager().beginTransaction().replace(android.R.id.content,
                 new MainPreferenceFragment()).commit();
     }

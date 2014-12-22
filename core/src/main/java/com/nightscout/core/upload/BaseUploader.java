@@ -5,6 +5,7 @@ import com.nightscout.core.dexcom.records.GlucoseDataSet;
 import com.nightscout.core.dexcom.records.MeterRecord;
 import com.nightscout.core.preferences.NightscoutPreferences;
 import com.nightscout.core.records.DeviceStatus;
+import com.squareup.otto.Subscribe;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,7 @@ public abstract class BaseUploader {
     }
 
     // TODO(trhodeos): implement some sort of retry logic in all of these public functions.
+    @Subscribe
     public final boolean uploadGlucoseDataSets(List<GlucoseDataSet> glucoseDataSets) {
         if (glucoseDataSets == null) {
             return true;
@@ -64,6 +66,7 @@ public abstract class BaseUploader {
      * @param meterRecords
      * @return True if the upload was successful, false if the upload was unsuccessful
      */
+    @Subscribe
     public final boolean uploadMeterRecords(List<MeterRecord> meterRecords) {
         if (meterRecords == null) {
             return true;
@@ -86,6 +89,7 @@ public abstract class BaseUploader {
      * @param calRecords
      * @return True if the upload was successful, false if the upload was unsuccessful
      */
+    @Subscribe
     public final boolean uploadCalRecords(List<CalRecord> calRecords) {
         if (calRecords == null) {
             return true;
@@ -110,6 +114,7 @@ public abstract class BaseUploader {
      * @param deviceStatus
      * @return True if the upload was successful or False if the upload was unsuccessful
      */
+    @Subscribe
     public final boolean uploadDeviceStatus(DeviceStatus deviceStatus) {
         if (deviceStatus == null) {
             return true;

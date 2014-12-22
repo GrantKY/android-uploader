@@ -32,6 +32,7 @@ import com.nightscout.core.dexcom.records.GlucoseDataSet;
 import com.nightscout.core.dexcom.records.MeterRecord;
 import com.nightscout.core.dexcom.records.SensorRecord;
 import com.nightscout.core.preferences.NightscoutPreferences;
+import com.squareup.otto.Bus;
 
 import org.json.JSONArray;
 
@@ -40,6 +41,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.inject.Inject;
 
 import static org.joda.time.Duration.standardMinutes;
 import static org.joda.time.Duration.standardSeconds;
@@ -70,6 +73,9 @@ public class SyncingService extends IntentService {
     private Context mContext;
     private UsbManager mUsbManager;
     private UsbSerialDriver mSerialDevice;
+
+  @Inject
+  Bus bus;
 
     // Constants
     private final int TIME_SYNC_OFFSET = 10000;
@@ -178,8 +184,9 @@ public class SyncingService extends IntentService {
                 }
 
                 EGVRecord recentEGV = recentRecords[recentRecords.length - 1];
+              bus.post(recentEGV);
                 broadcastSGVToUI(recentEGV, uploadStatus, nextUploadTime + TIME_SYNC_OFFSET,
-                        displayTime, array, batLevel);
+                                 displayTime, array, batLevel);
                 broadcastSent = true;
             } catch (ArrayIndexOutOfBoundsException e) {
                 Log.wtf("Unable to read from the dexcom, maybe it will work next time", e);
@@ -229,7 +236,7 @@ public class SyncingService extends IntentService {
             }
         }
 
-        if (!broadcastSent) broadcastSGVToUI();
+        if (!broadcastSent) broadcastEmptySgvToUi();
 
         wl.release();
     }
@@ -302,7 +309,7 @@ public class SyncingService extends IntentService {
             egvRecord, uploadStatus, nextUploadTime, displayTime, json, batLvl));
     }
 
-    private void broadcastSGVToUI() {
+    private void broadcastEmptySgvToUi() {
         EGVRecord record = new EGVRecord(-1, TrendArrow.NONE, new Date(), new Date(), NoiseMode.None);
         broadcastSGVToUI(record, false, standardMinutes(5).getMillis() + TIME_SYNC_OFFSET, new Date().getTime(), null, 0);
     }
